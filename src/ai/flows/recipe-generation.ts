@@ -47,7 +47,7 @@ const GenerateRecipeOutputSchema = z.object({
 export type GenerateRecipeOutput = z.infer<typeof GenerateRecipeOutputSchema>;
 
 export async function generateRecipe(input: GenerateRecipeInput): Promise<GenerateRecipeOutput> {
-  return generateRecipeFlow(input);
+  return generateRecipeFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
 }
 
 const recipeSearchTool = ai.defineTool({

@@ -121,8 +121,7 @@ async input => {
     const {output} = await prompt(input);
     return output!;
   } else {
-    const {recipes} = await searchRecipesTool({restrictions: input.restrictions});
-    return {recipes};
+    const recipes = await searchRecipesTool({restrictions: input.restrictions});
+    return {recipes: recipes || []};
   }
 });
-

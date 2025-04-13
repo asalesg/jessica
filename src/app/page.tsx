@@ -101,7 +101,7 @@ export default function Home() {
     });
   };
 
-  const handleGenerateRecipes = async () => {
+ const handleGenerateRecipes = async () => {
     if (selectedRestrictions.length === 0) {
       toast({
         title: 'Erro',
@@ -180,6 +180,10 @@ export default function Home() {
   const isFavorite = useCallback((recipe: Recipe) => {
     return favorites.some((fav) => fav.title === recipe.title);
   }, [favorites]);
+
+  const toggleRecipeDetails = (recipe: Recipe) => {
+    setExpandedRecipe(prevRecipe => (prevRecipe === recipe ? null : recipe));
+  };
 
   const renderRecipeContent = (recipe: Recipe) => (
     <>
@@ -279,7 +283,7 @@ export default function Home() {
           <ScrollArea className="h-[400px] w-full">
             <div className="grid gap-4">
               {favorites.map((recipe, index) => (
-                <Card key={index} onClick={() => setExpandedRecipe(recipe)} className="cursor-pointer">
+                <Card key={index} onClick={() => toggleRecipeDetails(recipe)} className="cursor-pointer">
                   <CardHeader>
                     <CardTitle>{recipe.title}</CardTitle>
                   </CardHeader>

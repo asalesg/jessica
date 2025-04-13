@@ -37,17 +37,41 @@ export type IntelligentRecipeSearchInput = z.infer<
 >;
 
 const IntelligentRecipeSearchOutputSchema = z.object({
-  recipes: z.array(z.any()).describe('The recipes found based on the dietary restrictions.'),
+  recipes: z.array(z.object({
+    title: z.string().describe('The title of the recipe.'),
+    ingredients: z.array(z.string()).describe('The ingredients required for the recipe.'),
+    instructions: z.string().describe('The instructions to prepare the recipe.'),
+    sourceUrl: z.string().describe('The URL where the recipe was found.'),
+    nutritionalInformation: z.string().optional().describe('Nutritional information for the recipe')
+  })).describe('The recipes found based on the dietary restrictions.'),
 });
 
 export type IntelligentRecipeSearchOutput = z.infer<
   typeof IntelligentRecipeSearchOutputSchema
 >;
 
+let previousRecipes: Recipe[] = [];
+
 export async function intelligentRecipeSearch(
   input: IntelligentRecipeSearchInput
 ): Promise<IntelligentRecipeSearchOutput> {
-  return intelligentRecipeSearchFlow(input);
+    let recipes = await intelligentRecipeSearchFlow(input);
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    while (previousRecipes.some(prevRecipe =>
+        recipes.recipes.some(newRecipe => newRecipe.title === prevRecipe.title)) && attempts < maxAttempts) {
+        recipes = await intelligentRecipeSearchFlow(input);
+        attempts++;
+    }
+
+    if (attempts === maxAttempts) {
+        console.warn("Maximum attempts reached. Could not generate a unique recipe.");
+    } else {
+        previousRecipes = recipes.recipes;
+    }
+
+    return recipes;
 }
 
 const searchRecipesTool = ai.defineTool({

@@ -46,8 +46,26 @@ const GenerateRecipeOutputSchema = z.object({
 
 export type GenerateRecipeOutput = z.infer<typeof GenerateRecipeOutputSchema>;
 
+let previousRecipes: Recipe[] = [];
+
 export async function generateRecipe(input: GenerateRecipeInput): Promise<GenerateRecipeOutput> {
-  return generateRecipeFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
+    let recipes = await generateRecipeFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    while (previousRecipes.some(prevRecipe =>
+        recipes.recipes.some(newRecipe => newRecipe.title === prevRecipe.title)) && attempts < maxAttempts) {
+        recipes = await generateRecipeFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
+        attempts++;
+    }
+
+    if (attempts === maxAttempts) {
+        console.warn("Maximum attempts reached. Could not generate a unique recipe.");
+    } else {
+        previousRecipes = recipes.recipes;
+    }
+
+    return recipes;
 }
 
 const recipeSearchTool = ai.defineTool({

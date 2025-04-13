@@ -27,6 +27,7 @@ const IntelligentRecipeSearchInputSchema = z.object({
     ] as const))
     .describe('The dietary restrictions to consider when searching for recipes.'),
   recipeName: z.string().optional().describe('The name of the recipe to search for.'),
+  dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to search for (doce or salgado).')
 });
 
 export type IntelligentRecipeSearchInput = z.infer<
@@ -65,6 +66,7 @@ const searchRecipesTool = ai.defineTool({
         'Gota',
       ] as const))
       .describe('The dietary restrictions to consider when searching for recipes.'),
+      dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to search for (doce or salgado).')
   }),
   outputSchema: z.array(z.object({
     title: z.string().describe('The title of the recipe.'),
@@ -75,7 +77,7 @@ const searchRecipesTool = ai.defineTool({
   })),
 },
 async input => {
-    return await searchRecipes(input.restrictions);
+    return await searchRecipes(input.restrictions, input.dishType);
   }
 );
 
@@ -100,6 +102,7 @@ const prompt = ai.definePrompt({
         ] as const))
         .describe('The dietary restrictions to consider when searching for recipes.'),
         recipeName: z.string().optional().describe('The name of the recipe to search for.'),
+        dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to search for (doce or salgado).')
     }),
   },
   output: {
@@ -117,6 +120,7 @@ const prompt = ai.definePrompt({
 
 Restrictions: {{{restrictions}}}
 Recipe Name: {{{recipeName}}}
+Dish Type: {{{dishType}}}
 
 {{#if restrictions}}
   Here are some recipes that adhere to these restrictions, use the searchRecipes tool to find recipes that meet the dietary restrictions.
@@ -138,4 +142,3 @@ async input => {
   const {output} = await prompt(input);
     return output!;
 });
-

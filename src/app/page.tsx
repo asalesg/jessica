@@ -86,6 +86,7 @@ export default function Home() {
   const [openFavoritesDialog, setOpenFavoritesDialog] = useState(false);
   const [expandedRecipe, setExpandedRecipe] = useState<Recipe | null>(null);
   const [ingredients, setIngredients] = useState('');
+  const [dishType, setDishType] = useState<'doce' | 'salgado' | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -114,7 +115,7 @@ export default function Home() {
 
     setGenerating(true);
     try {
-      const generatedRecipes = await generateRecipe({restrictions: selectedRestrictions, ingredients: ingredients});
+      const generatedRecipes = await generateRecipe({restrictions: selectedRestrictions, ingredients: ingredients, dishType: dishType});
       if (generatedRecipes && generatedRecipes.recipes) {
         setRecipes(generatedRecipes.recipes);
       } else {
@@ -146,7 +147,7 @@ export default function Home() {
     }
     setSearching(true);
     try {
-      const searchResults = await intelligentRecipeSearch({restrictions: selectedRestrictions});
+      const searchResults = await intelligentRecipeSearch({restrictions: selectedRestrictions, dishType: dishType});
       if (searchResults && searchResults.recipes && searchResults.recipes.length > 0) {
         setRecipes(searchResults.recipes);
       } else {
@@ -250,6 +251,32 @@ export default function Home() {
             onChange={(e) => setIngredients(e.target.value)}
             className="mb-4"
         />
+
+      <div className="flex items-center space-x-2 mb-4">
+        <label htmlFor="dishType" className="text-sm font-medium leading-none">
+          Tipo de Prato:
+        </label>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="doce"
+            checked={dishType === 'doce'}
+            onCheckedChange={(checked) => setDishType(checked ? 'doce' : null)}
+          />
+          <label htmlFor="doce" className="text-sm font-medium leading-none">
+            Doce
+          </label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="salgado"
+            checked={dishType === 'salgado'}
+            onCheckedChange={(checked) => setDishType(checked ? 'salgado' : null)}
+          />
+          <label htmlFor="salgado" className="text-sm font-medium leading-none">
+            Salgado
+          </label>
+        </div>
+      </div>
 
       <div className="flex space-x-4 mb-4">
         <Button

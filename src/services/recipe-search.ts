@@ -43,14 +43,16 @@ export type DietaryRestriction =
  * Asynchronously searches for recipes based on dietary restrictions.
  *
  * @param restrictions An array of dietary restrictions to consider.
+ * @param dishType The type of dish to search for ('doce' for sweet, 'salgado' for savory).
  * @returns A promise that resolves to an array of Recipe objects.
  */
 export async function searchRecipes(
-  restrictions: DietaryRestriction[]
+  restrictions: DietaryRestriction[],
+  dishType?: 'doce' | 'salgado'
 ): Promise<Recipe[]> {
   // TODO: Implement this by calling an API or scraping the web.
 
-  return [
+  let recipes: Recipe[] = [
     {
       title: 'Arroz com Frango e Legumes (Sem Glúten e Lactose)',
       ingredients: ['1 xícara de arroz branco', '200g de peito de frango em cubos', '1/2 xícara de brócolis picado', '1/2 xícara de cenoura em cubos pequenos', '1/4 de cebola picada', '1 dente de alho picado', 'Azeite de oliva a gosto', 'Sal e temperos a gosto'],
@@ -71,6 +73,33 @@ export async function searchRecipes(
       instructions: 'Misture todos os ingredientes em uma tigela. Tempere com suco de limão, azeite, sal, pimenta e salsinha. Sirva fria.',
       sourceUrl: 'https://www.example.com/salada-quinoa-grao-de-bico',
       nutritionalInformation: 'Calorias: 280, Proteínas: 12g, Carboidratos: 40g'
+    },
+     {
+      title: 'Mousse de Chocolate Vegano',
+      ingredients: ['1 abacate maduro', '1/4 xícara de cacau em pó', '1/4 xícara de leite de coco', '2 colheres de sopa de xarope de bordo', '1 colher de chá de extrato de baunilha'],
+      instructions: 'Bata todos os ingredientes no liquidificador até obter uma consistência cremosa. Leve à geladeira por pelo menos 30 minutos antes de servir.',
+      sourceUrl: 'https://www.example.com/mousse-chocolate-vegano',
+      nutritionalInformation: 'Calorias: 250, Proteínas: 4g, Carboidratos: 25g'
+    },
+    {
+      title: 'Smoothie de Frutas Vermelhas sem Lactose',
+      ingredients: ['1 xícara de frutas vermelhas congeladas (morango, framboesa, amora)', '1/2 banana', '1/2 xícara de leite de amêndoas', '1 colher de sopa de sementes de chia'],
+      instructions: 'Bata todos os ingredientes no liquidificador até ficar homogêneo. Sirva imediatamente.',
+      sourceUrl: 'https://www.example.com/smoothie-frutas-vermelhas',
+      nutritionalInformation: 'Calorias: 180, Proteínas: 3g, Carboidratos: 30g'
     }
   ];
+
+  if (dishType) {
+    recipes = recipes.filter(recipe => {
+      if (dishType === 'doce') {
+        return recipe.title.toLowerCase().includes('doce') || recipe.title.toLowerCase().includes('mousse') || recipe.title.toLowerCase().includes('smoothie');
+      } else if (dishType === 'salgado') {
+        return !recipe.title.toLowerCase().includes('doce') && !recipe.title.toLowerCase().includes('mousse') && !recipe.title.toLowerCase().includes('smoothie');
+      }
+      return true;
+    });
+  }
+
+  return recipes;
 }

@@ -26,7 +26,8 @@ const GenerateRecipeInputSchema = z.object({
       'Gota',
     ] as const))
     .describe('The dietary restrictions to consider when generating the recipe.'),
-    ingredients: z.string().describe('A comma separated list of ingredients to include in the recipe.')
+    ingredients: z.string().describe('A comma separated list of ingredients to include in the recipe.'),
+    dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to generate (doce or salgado).')
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -62,6 +63,7 @@ const recipeSearchTool = ai.defineTool({
       'Dislipidemia',
       'Gota',
     ] as const)).describe('The dietary restrictions to consider when searching for recipes.'),
+    dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to search for (doce or salgado).')
   }),
   outputSchema: z.array(z.object({
     title: z.string().describe('The title of the recipe.'),
@@ -72,7 +74,7 @@ const recipeSearchTool = ai.defineTool({
   })),
 },
 async (input) => {
-  return await searchRecipes(input.restrictions as DietaryRestriction[]);
+  return await searchRecipes(input.restrictions as DietaryRestriction[], input.dishType);
 });
 
 const prompt = ai.definePrompt({
@@ -88,8 +90,9 @@ const prompt = ai.definePrompt({
 
   O usuário tem as seguintes restrições alimentares: {{restrictions}}.
   O usuário quer incluir os seguintes ingredientes: {{ingredients}}
+  O usuário prefere receitas do tipo: {{dishType}}
 
-  Sua tarefa é gerar receitas que atendam a essas restrições e use os ingredientes. Se necessário, use a ferramenta searchRecipes para encontrar receitas existentes e adaptá-las.
+  Sua tarefa é gerar receitas que atendam a essas restrições, use os ingredientes, e seja do tipo especificado. Se necessário, use a ferramenta searchRecipes para encontrar receitas existentes e adaptá-las.
   A saida deve ser um array de receitas que atendam as restricoes do usuario.
 `,
 });
@@ -105,4 +108,3 @@ const generateRecipeFlow = ai.defineFlow<
   const {output} = await prompt(input);
   return output!;
 });
-

@@ -26,6 +26,7 @@ const GenerateRecipeInputSchema = z.object({
       'Gota',
     ] as const))
     .describe('The dietary restrictions to consider when generating the recipe.'),
+    ingredients: z.string().describe('A comma separated list of ingredients to include in the recipe.')
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
 
@@ -86,8 +87,9 @@ const prompt = ai.definePrompt({
   prompt: `Você é um especialista em culinária saudável e adaptada a restrições alimentares.
 
   O usuário tem as seguintes restrições alimentares: {{restrictions}}.
+  O usuário quer incluir os seguintes ingredientes: {{ingredients}}
 
-  Sua tarefa é gerar receitas que atendam a essas restrições. Se necessário, use a ferramenta searchRecipes para encontrar receitas existentes e adaptá-las.
+  Sua tarefa é gerar receitas que atendam a essas restrições e use os ingredientes. Se necessário, use a ferramenta searchRecipes para encontrar receitas existentes e adaptá-las.
   A saida deve ser um array de receitas que atendam as restricoes do usuario.
 `,
 });
@@ -103,3 +105,4 @@ const generateRecipeFlow = ai.defineFlow<
   const {output} = await prompt(input);
   return output!;
 });
+

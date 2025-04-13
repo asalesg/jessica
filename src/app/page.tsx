@@ -11,6 +11,7 @@ import {useToast} from '@/hooks/use-toast';
 import {Heart, HeartOff} from 'lucide-react';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {Input} from "@/components/ui/input";
 
 const dietaryRestrictionsList: {
   value: DietaryRestriction;
@@ -84,6 +85,7 @@ export default function Home() {
   });
   const [openFavoritesDialog, setOpenFavoritesDialog] = useState(false);
   const [expandedRecipe, setExpandedRecipe] = useState<Recipe | null>(null);
+  const [ingredients, setIngredients] = useState('');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -112,7 +114,7 @@ export default function Home() {
 
     setGenerating(true);
     try {
-      const generatedRecipes = await generateRecipe({restrictions: selectedRestrictions});
+      const generatedRecipes = await generateRecipe({restrictions: selectedRestrictions, ingredients: ingredients});
       if (generatedRecipes && generatedRecipes.recipes) {
         setRecipes(generatedRecipes.recipes);
       } else {
@@ -240,6 +242,14 @@ export default function Home() {
           ))}
         </CardContent>
       </Card>
+
+        <Input
+            type="text"
+            placeholder="Adicione ingredientes (separados por vírgula)"
+            value={ingredients}
+            onChange={(e) => setIngredients(e.target.value)}
+            className="mb-4"
+        />
 
       <div className="flex space-x-4 mb-4">
         <Button

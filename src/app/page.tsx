@@ -1,14 +1,14 @@
 'use client';
 
-import {useState} from 'react';
-import {DietaryRestriction} from '@/services/recipe-search';
+import {useState, useEffect, useCallback} from 'react';
+import {DietaryRestriction, Recipe} from '@/services/recipe-search';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Checkbox} from '@/components/ui/checkbox';
 import {intelligentRecipeSearch} from '@/ai/flows/intelligent-recipe-search';
 import {generateRecipe} from '@/ai/flows/recipe-generation';
-import {Recipe} from '@/services/recipe-search';
 import {useToast} from '@/hooks/use-toast';
+import {Heart, HeartOff} from 'lucide-react';
 
 const dietaryRestrictionsList: {
   value: DietaryRestriction;
@@ -47,7 +47,7 @@ const dietaryRestrictionsList: {
   },
   {
     value: 'Síndrome do Intestino Irritável',
-    label: 'Síndrome do Intestino Irritável (SII e FODMAP)',
+    label: 'Síndrome do Intestino Irritável (FODMAP)',
     description: 'Restrição: Alimentos ricos em FODMAPs (carboidratos fermentáveis)',
   },
   {
@@ -57,7 +57,7 @@ const dietaryRestrictionsList: {
   },
   {
     value: 'Dislipidemia',
-    label: 'Dislipidemia (colesterol ou triglicérides altos)',
+    label: 'Dislipidemia (colesterol ou triglicerídes altos)',
     description: 'Restrição: Gorduras saturadas, trans e excesso de carboidratos simples',
   },
   {
@@ -73,6 +73,19 @@ export default function Home() {
   const [generating, setGenerating] = useState(false);
   const [searching, setSearching] = useState(false);
   const {toast} = useToast();
+  const [favorites, setFavorites] = useState<Recipe[]>(() => {
+    if (typeof window !== 'undefined') {
+      const storedFavorites = localStorage.getItem('favorites');
+      return storedFavorites ? JSON.parse(storedFavorites) : [];
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+    }
+  }, [favorites]);
 
   const handleRestrictionChange = (restriction: DietaryRestriction) => {
     setSelectedRestrictions((prevRestrictions) => {
@@ -119,23 +132,41 @@ export default function Home() {
     setSearching(true);
     try {
       const searchResults = await intelligentRecipeSearch({restrictions: selectedRestrictions});
-      if (!searchResults.recipes || searchResults.recipes.length === 0) {
+      if (!searchResults || !searchResults.recipes || searchResults.recipes.length === 0) {
         toast({
           title: 'Nenhuma receita encontrada',
           description: 'Não foi possível encontrar receitas com as restrições selecionadas.',
         });
+        setRecipes([]); // Clear existing recipes
+      } else {
+        setRecipes(searchResults.recipes);
       }
-      setRecipes(searchResults.recipes);
     } catch (error: any) {
       console.error('Erro ao buscar receitas:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao buscar receitas: ' + error.message,
       });
+      setRecipes([]); // Clear existing recipes
     } finally {
       setSearching(false);
     }
   };
+
+  const toggleFavorite = useCallback((recipe: Recipe) => {
+    setFavorites((prevFavorites) => {
+      const isFavorite = prevFavorites.some((fav) => fav.title === recipe.title);
+      if (isFavorite) {
+        return prevFavorites.filter((fav) => fav.title !== recipe.title);
+      } else {
+        return [...prevFavorites, recipe];
+      }
+    });
+  }, []);
+
+  const isFavorite = useCallback((recipe: Recipe) => {
+    return favorites.some((fav) => fav.title === recipe.title);
+  }, [favorites]);
 
   return (
     <div className="container mx-auto p-4">
@@ -167,19 +198,50 @@ export default function Home() {
       <div className="flex space-x-4 mb-4">
         <Button
           onClick={handleGenerateRecipes}
-          className="bg-green-500 text-white rounded-md p-2"
+          className="bg-green-500 text-white rounded-md p-2 hover:bg-green-700 transition duration-300"
           disabled={generating}
         >
           {generating ? 'Gerando...' : 'Gerar Receitas'}
         </Button>
         <Button
           onClick={handleSearchRecipes}
-          className="bg-orange-500 text-white rounded-md p-2"
+          className="bg-orange-500 text-white rounded-md p-2 hover:bg-orange-700 transition duration-300"
           disabled={searching}
         >
           {searching ? 'Buscando...' : 'Buscar Receitas'}
         </Button>
       </div>
+
+      {/* Favorite Recipes Section */}
+      {favorites.length > 0 && (
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-2 text-red-500">Receitas Favoritas:</h2>
+          <div className="grid gap-4">
+            {favorites.map((recipe, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle>{recipe.title}</CardTitle>
+                  <CardDescription>
+                    Ingredientes: {Array.isArray(recipe.ingredients) ? recipe.ingredients.join(', ') : 'Ingredientes não listados'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>Modo de Preparo: {recipe.instructions}</p>
+                  {recipe.nutritionalInformation && (
+                    <p>Informações Nutricionais: {recipe.nutritionalInformation}</p>
+                  )}
+                  <p>Fonte: <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">{recipe.sourceUrl}</a></p>
+                </CardContent>
+                <div className="p-4 flex justify-end">
+                  <Button variant="ghost" size="icon" onClick={() => toggleFavorite(recipe)}>
+                    {isFavorite(recipe) ? <HeartOff className="h-5 w-5 text-red-500" /> : <Heart className="h-5 w-5 text-red-500" />}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {recipes.length > 0 && (
         <div>
@@ -200,6 +262,11 @@ export default function Home() {
                   )}
                   <p>Fonte: <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">{recipe.sourceUrl}</a></p>
                 </CardContent>
+                <div className="p-4 flex justify-end">
+                  <Button variant="ghost" size="icon" onClick={() => toggleFavorite(recipe)}>
+                    {isFavorite(recipe) ? <HeartOff className="h-5 w-5 text-red-500" /> : <Heart className="h-5 w-5 text-red-500" />}
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>

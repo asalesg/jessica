@@ -8,6 +8,7 @@ import {Checkbox} from '@/components/ui/checkbox';
 import {intelligentRecipeSearch} from '@/ai/flows/intelligent-recipe-search';
 import {generateRecipe} from '@/ai/flows/recipe-generation';
 import {Recipe} from '@/services/recipe-search';
+import {useToast} from '@/hooks/use-toast';
 
 const dietaryRestrictionsList: {
   value: DietaryRestriction;
@@ -46,7 +47,7 @@ const dietaryRestrictionsList: {
   },
   {
     value: 'Síndrome do Intestino Irritável',
-    label: 'Síndrome do Intestino Irritável (SII)',
+    label: 'Síndrome do Intestino Irritável (SII e FODMAP)',
     description: 'Restrição: Alimentos ricos em FODMAPs (carboidratos fermentáveis)',
   },
   {
@@ -69,6 +70,9 @@ const dietaryRestrictionsList: {
 export default function Home() {
   const [selectedRestrictions, setSelectedRestrictions] = useState<DietaryRestriction[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [generating, setGenerating] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const {toast} = useToast();
 
   const handleRestrictionChange = (restriction: DietaryRestriction) => {
     setSelectedRestrictions((prevRestrictions) => {
@@ -82,31 +86,54 @@ export default function Home() {
 
   const handleGenerateRecipes = async () => {
     if (selectedRestrictions.length === 0) {
-      alert('Selecione pelo menos uma restrição alimentar.');
+      toast({
+        title: 'Erro',
+        description: 'Selecione pelo menos uma restrição alimentar.',
+      });
       return;
     }
 
+    setGenerating(true);
     try {
       const generatedRecipes = await generateRecipe({restrictions: selectedRestrictions});
       setRecipes(generatedRecipes.recipes);
     } catch (error: any) {
       console.error('Erro ao gerar receitas:', error);
-      alert('Erro ao gerar receitas: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao gerar receitas: ' + error.message,
+      });
+    } finally {
+      setGenerating(false);
     }
   };
 
   const handleSearchRecipes = async () => {
     if (selectedRestrictions.length === 0) {
-      alert('Selecione pelo menos uma restrição alimentar.');
+      toast({
+        title: 'Erro',
+        description: 'Selecione pelo menos uma restrição alimentar.',
+      });
       return;
     }
-
+    setSearching(true);
     try {
       const searchResults = await intelligentRecipeSearch({restrictions: selectedRestrictions});
+      if (!searchResults.recipes || searchResults.recipes.length === 0) {
+        toast({
+          title: 'Nenhuma receita encontrada',
+          description: 'Não foi possível encontrar receitas com as restrições selecionadas.',
+        });
+      }
       setRecipes(searchResults.recipes);
     } catch (error: any) {
       console.error('Erro ao buscar receitas:', error);
-      alert('Erro ao buscar receitas: ' + error.message);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao buscar receitas: ' + error.message,
+      });
+    } finally {
+      setSearching(false);
     }
   };
 
@@ -138,11 +165,19 @@ export default function Home() {
       </Card>
 
       <div className="flex space-x-4 mb-4">
-        <Button onClick={handleGenerateRecipes} className="bg-green-500 text-white rounded-md p-2">
-          Gerar Receitas
+        <Button
+          onClick={handleGenerateRecipes}
+          className="bg-green-500 text-white rounded-md p-2"
+          disabled={generating}
+        >
+          {generating ? 'Gerando...' : 'Gerar Receitas'}
         </Button>
-        <Button onClick={handleSearchRecipes} className="bg-orange-500 text-white rounded-md p-2">
-          Buscar Receitas
+        <Button
+          onClick={handleSearchRecipes}
+          className="bg-orange-500 text-white rounded-md p-2"
+          disabled={searching}
+        >
+          {searching ? 'Buscando...' : 'Buscar Receitas'}
         </Button>
       </div>
 

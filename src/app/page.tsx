@@ -9,6 +9,8 @@ import {intelligentRecipeSearch} from '@/ai/flows/intelligent-recipe-search';
 import {generateRecipe} from '@/ai/flows/recipe-generation';
 import {useToast} from '@/hooks/use-toast';
 import {Heart, HeartOff} from 'lucide-react';
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
+import {ScrollArea} from "@/components/ui/scroll-area";
 
 const dietaryRestrictionsList: {
   value: DietaryRestriction;
@@ -80,6 +82,8 @@ export default function Home() {
     }
     return [];
   });
+  const [openFavoritesDialog, setOpenFavoritesDialog] = useState(false);
+  const [expandedRecipe, setExpandedRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -109,13 +113,22 @@ export default function Home() {
     setGenerating(true);
     try {
       const generatedRecipes = await generateRecipe({restrictions: selectedRestrictions});
-      setRecipes(generatedRecipes.recipes);
+      if (generatedRecipes && generatedRecipes.recipes) {
+        setRecipes(generatedRecipes.recipes);
+      } else {
+        setRecipes([]);
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível gerar receitas com as restrições selecionadas.',
+        });
+      }
     } catch (error: any) {
       console.error('Erro ao gerar receitas:', error);
       toast({
         title: 'Erro',
         description: 'Erro ao gerar receitas: ' + error.message,
       });
+      setRecipes([]);
     } finally {
       setGenerating(false);
     }
@@ -132,14 +145,14 @@ export default function Home() {
     setSearching(true);
     try {
       const searchResults = await intelligentRecipeSearch({restrictions: selectedRestrictions});
-      if (!searchResults || !searchResults.recipes || searchResults.recipes.length === 0) {
+      if (searchResults && searchResults.recipes && searchResults.recipes.length > 0) {
+        setRecipes(searchResults.recipes);
+      } else {
         toast({
           title: 'Nenhuma receita encontrada',
           description: 'Não foi possível encontrar receitas com as restrições selecionadas.',
         });
-        setRecipes([]); // Clear existing recipes
-      } else {
-        setRecipes(searchResults.recipes);
+        setRecipes([]);
       }
     } catch (error: any) {
       console.error('Erro ao buscar receitas:', error);
@@ -147,7 +160,7 @@ export default function Home() {
         title: 'Erro',
         description: 'Erro ao buscar receitas: ' + error.message,
       });
-      setRecipes([]); // Clear existing recipes
+      setRecipes([]);
     } finally {
       setSearching(false);
     }
@@ -168,9 +181,38 @@ export default function Home() {
     return favorites.some((fav) => fav.title === recipe.title);
   }, [favorites]);
 
+  const renderRecipeContent = (recipe: Recipe) => (
+    <>
+      <CardHeader>
+        <CardTitle>{recipe.title}</CardTitle>
+        <CardDescription>
+          Ingredientes: {Array.isArray(recipe.ingredients) ? recipe.ingredients.join(', ') : 'Ingredientes não listados'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Modo de Preparo: {recipe.instructions}</p>
+        {recipe.nutritionalInformation && (
+          <p>Informações Nutricionais: {recipe.nutritionalInformation}</p>
+        )}
+        <p>Fonte: <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">{recipe.sourceUrl}</a></p>
+      </CardContent>
+      <div className="p-4 flex justify-end">
+        <Button variant="ghost" size="icon" onClick={() => toggleFavorite(recipe)}>
+          {isFavorite(recipe) ? <HeartOff className="h-5 w-5 text-red-500" /> : <Heart className="h-5 w-5 text-red-500" />}
+        </Button>
+      </div>
+    </>
+  );
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-green-500">Chef Saúde</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-green-500">Chef Saúde</h1>
+        <Button variant="ghost" size="icon" onClick={() => setOpenFavoritesDialog(true)}>
+          <Heart className="h-5 w-5 text-red-500"/>
+        </Button>
+      </div>
+
       <Card className="mb-4">
         <CardHeader>
           <CardTitle>Selecione suas Restrições Alimentares</CardTitle>
@@ -212,66 +254,53 @@ export default function Home() {
         </Button>
       </div>
 
-      {/* Favorite Recipes Section */}
-      {favorites.length > 0 && (
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-2 text-red-500">Receitas Favoritas:</h2>
-          <div className="grid gap-4">
-            {favorites.map((recipe, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle>{recipe.title}</CardTitle>
-                  <CardDescription>
-                    Ingredientes: {Array.isArray(recipe.ingredients) ? recipe.ingredients.join(', ') : 'Ingredientes não listados'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>Modo de Preparo: {recipe.instructions}</p>
-                  {recipe.nutritionalInformation && (
-                    <p>Informações Nutricionais: {recipe.nutritionalInformation}</p>
-                  )}
-                  <p>Fonte: <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">{recipe.sourceUrl}</a></p>
-                </CardContent>
-                <div className="p-4 flex justify-end">
-                  <Button variant="ghost" size="icon" onClick={() => toggleFavorite(recipe)}>
-                    {isFavorite(recipe) ? <HeartOff className="h-5 w-5 text-red-500" /> : <Heart className="h-5 w-5 text-red-500" />}
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
       {recipes.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-2 text-orange-500">Receitas Encontradas:</h2>
           <div className="grid gap-4">
             {recipes.map((recipe, index) => (
               <Card key={index}>
-                <CardHeader>
-                  <CardTitle>{recipe.title}</CardTitle>
-                  <CardDescription>
-                    Ingredientes: {Array.isArray(recipe.ingredients) ? recipe.ingredients.join(', ') : 'Ingredientes não listados'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>Modo de Preparo: {recipe.instructions}</p>
-                  {recipe.nutritionalInformation && (
-                    <p>Informações Nutricionais: {recipe.nutritionalInformation}</p>
-                  )}
-                  <p>Fonte: <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">{recipe.sourceUrl}</a></p>
-                </CardContent>
-                <div className="p-4 flex justify-end">
-                  <Button variant="ghost" size="icon" onClick={() => toggleFavorite(recipe)}>
-                    {isFavorite(recipe) ? <HeartOff className="h-5 w-5 text-red-500" /> : <Heart className="h-5 w-5 text-red-500" />}
-                  </Button>
-                </div>
+                {renderRecipeContent(recipe)}
               </Card>
             ))}
           </div>
         </div>
       )}
+
+      {/* Favorites Dialog */}
+      <Dialog open={openFavoritesDialog} onOpenChange={setOpenFavoritesDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Receitas Favoritas</DialogTitle>
+            <DialogDescription>
+              Aqui estão suas receitas favoritas. Clique em uma receita para ver os detalhes.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[400px] w-full">
+            <div className="grid gap-4">
+              {favorites.map((recipe, index) => (
+                <Card key={index} onClick={() => setExpandedRecipe(recipe)} className="cursor-pointer">
+                  <CardHeader>
+                    <CardTitle>{recipe.title}</CardTitle>
+                  </CardHeader>
+                  {expandedRecipe === recipe ? (
+                    <CardContent>
+                      <p>Ingredientes: {recipe.ingredients.join(', ')}</p>
+                      <p>Instruções: {recipe.instructions}</p>
+                      {recipe.nutritionalInformation && <p>Nutrição: {recipe.nutritionalInformation}</p>}
+                      <p>Fonte: <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">{recipe.sourceUrl}</a></p>
+                    </CardContent>
+                  ) : (
+                    <CardContent>
+                      <p>Clique para expandir</p>
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

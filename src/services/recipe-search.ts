@@ -53,7 +53,68 @@ export async function searchRecipes(
   restrictions: DietaryRestriction[],
   dishType?: 'doce' | 'salgado'
 ): Promise<Recipe[]> {
-  // TODO: Implement this by calling an API or scraping the web.
+  // const apiKey = process.env.RECIPE_API_KEY; // Ensure you have this in your .env file
+  // if (!apiKey) {
+  //   console.error('RECIPE_API_KEY is not set in the environment variables.');
+  //   return [];
+  // }
+
+  // const baseUrl = 'https://api.spoonacular.com/recipes/complexSearch';
+  // let queryParams = `apiKey=${apiKey}&number=5`; // Limit to 5 recipes for now
+
+  // // Add dietary restrictions to the query
+  // if (restrictions && restrictions.length > 0) {
+  //   const diets = restrictions.map(restriction => {
+  //     switch (restriction) {
+  //       case 'Doença Celíaca': return 'gluten free';
+  //       case 'Intolerância à Lactose': return 'dairy free';
+  //       case 'Alergia Alimentar': return ''; // More specific allergy targeting would be needed
+  //       case 'Diabetes Mellitus': return ''; // Specific targeting of low sugar needed
+  //       case 'Doença Renal Crônica': return ''; // Difficult to target generally
+  //       case 'Fenilcetonúria': return ''; // Very specific amino acid targeting needed
+  //       case 'Síndrome do Intestino Irritável': return 'fodmap friendly';
+  //       case 'Doença Inflamatória Intestinal': return ''; // Varies person to person
+  //       case 'Dislipidemia': return 'low cholesterol';
+  //       case 'Gota': return 'low purine';
+  //       case 'Vegano': return 'vegan';
+  //       case 'Vegetariano': return 'vegetarian';
+  //       case 'Ovolacto': return 'lacto-ovo vegetarian';
+  //       default: return '';
+  //     }
+  //   }).filter(diet => diet !== '').join(',');
+  //   if (diets) {
+  //     queryParams += `&diet=${diets}`;
+  //   }
+  // }
+
+  // // Add dish type to the query
+  // if (dishType) {
+  //   queryParams += `&type=${dishType}`;
+  // }
+
+  // try {
+  //   const response = await fetch(`${baseUrl}?${queryParams}`);
+  //   if (!response.ok) {
+  //     throw new Error(`HTTP error! status: ${response.status}`);
+  //   }
+  //   const data = await response.json();
+
+  //   if (data.results) {
+  //     return data.results.map((item: any) => ({
+  //       title: item.title,
+  //       ingredients: [], // The API doesn't directly provide ingredients, can fetch with another call if needed
+  //       instructions: `Source URL: ${item.sourceUrl}`, // Instructions not directly provided; use source URL
+  //       sourceUrl: item.sourceUrl,
+  //       nutritionalInformation: '', // Nutritional info not directly provided
+  //     }));
+  //   } else {
+  //     console.log('No recipes found with the given criteria.');
+  //     return [];
+  //   }
+  // } catch (error) {
+  //   console.error('Error fetching recipes:', error);
+  //   return [];
+  // }
 
   let recipes: Recipe[] = [
     {

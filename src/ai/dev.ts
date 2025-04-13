@@ -1,1 +1,2 @@
-// Flows will be imported for their side effects in this file.
+import '@/ai/flows/intelligent-recipe-search.ts';
+import '@/ai/flows/recipe-generation.ts';

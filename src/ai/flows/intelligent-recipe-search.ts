@@ -55,13 +55,13 @@ let previousRecipes: Recipe[] = [];
 export async function intelligentRecipeSearch(
   input: IntelligentRecipeSearchInput
 ): Promise<IntelligentRecipeSearchOutput> {
-    let recipes = await intelligentRecipeSearchFlow(input);
+    let recipes = await intelligentRecipeSearchFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
     let attempts = 0;
     const maxAttempts = 5;
 
     while (previousRecipes.some(prevRecipe =>
         recipes.recipes.some(newRecipe => newRecipe.title === prevRecipe.title)) && attempts < maxAttempts) {
-        recipes = await intelligentRecipeSearchFlow(input);
+        recipes = await intelligentRecipeSearchFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
         attempts++;
     }
 

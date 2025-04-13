@@ -162,7 +162,7 @@ export default function Home() {
     }
     setSearching(true);
     try {
-      const searchResults = await intelligentRecipeSearch({restrictions: selectedRestrictions, dishType: dishType});
+      const searchResults = await intelligentRecipeSearch({restrictions: selectedRestrictions, dishType: dishType === null ? undefined : dishType});
       if (searchResults && searchResults.recipes && searchResults.recipes.length > 0) {
         setRecipes(searchResults.recipes);
       } else {

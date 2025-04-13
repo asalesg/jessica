@@ -270,7 +270,7 @@ export default function Home() {
         </Button>
         <Button
           onClick={() => {
-            if (selectedRestrictions.length === 0) {
+             if (selectedRestrictions.length === 0) {
               toast({
                 title: 'Erro',
                 description: 'Selecione pelo menos uma restrição alimentar.',

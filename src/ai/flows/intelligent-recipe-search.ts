@@ -21,9 +21,11 @@ const IntelligentRecipeSearchInputSchema = z.object({
       'Doença Renal Crônica',
       'Fenilcetonúria',
       'Síndrome do Intestino Irritável',
-      'Doença Inflamatória Intestinal',
       'Dislipidemia',
       'Gota',
+      'Vegano',
+      'Vegetariano',
+      'Ovolacto',
     ] as const))
     .describe('The dietary restrictions to consider when searching for recipes.'),
   recipeName: z.string().optional().describe('The name of the recipe to search for.'),
@@ -61,9 +63,11 @@ const searchRecipesTool = ai.defineTool({
         'Doença Renal Crônica',
         'Fenilcetonúria',
         'Síndrome do Intestino Irritável',
-        'Doença Inflamatória Intestinal',
         'Dislipidemia',
         'Gota',
+        'Vegano',
+        'Vegetariano',
+        'Ovolacto',
       ] as const))
       .describe('The dietary restrictions to consider when searching for recipes.'),
       dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to search for (doce or salgado).')
@@ -96,9 +100,11 @@ const prompt = ai.definePrompt({
           'Doença Renal Crônica',
           'Fenilcetonúria',
           'Síndrome do Intestino Irritável',
-          'Doença Inflamatória Intestinal',
           'Dislipidemia',
           'Gota',
+          'Vegano',
+          'Vegetariano',
+          'Ovolacto',
         ] as const))
         .describe('The dietary restrictions to consider when searching for recipes.'),
         recipeName: z.string().optional().describe('The name of the recipe to search for.'),

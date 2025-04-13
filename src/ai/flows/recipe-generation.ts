@@ -24,6 +24,9 @@ const GenerateRecipeInputSchema = z.object({
       'Doença Inflamatória Intestinal',
       'Dislipidemia',
       'Gota',
+      'Vegano',
+      'Vegetariano',
+      'Ovolacto',
     ] as const))
     .describe('The dietary restrictions to consider when generating the recipe.'),
     ingredients: z.string().describe('A comma separated list of ingredients to include in the recipe.'),
@@ -62,6 +65,9 @@ const recipeSearchTool = ai.defineTool({
       'Doença Inflamatória Intestinal',
       'Dislipidemia',
       'Gota',
+      'Vegano',
+      'Vegetariano',
+      'Ovolacto',
     ] as const)).describe('The dietary restrictions to consider when searching for recipes.'),
     dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to search for (doce or salgado).')
   }),

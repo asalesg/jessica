@@ -68,6 +68,21 @@ const dietaryRestrictionsList: {
     label: 'Gota (hiperuricemia)',
     description: 'Restrição: Alimentos ricos em purinas (carnes vermelhas, frutos do mar, bebidas alcoólicas)',
   },
+  {
+    value: 'Vegano',
+    label: 'Vegano',
+    description: 'Restrição: Nenhum produto de origem animal',
+  },
+  {
+    value: 'Vegetariano',
+    label: 'Vegetariano',
+    description: 'Restrição: Carne, peixe e aves',
+  },
+  {
+    value: 'Ovolacto',
+    label: 'Ovolacto',
+    description: 'Restrição: Carne, peixe, aves e laticínios',
+  },
 ];
 
 export default function Home() {

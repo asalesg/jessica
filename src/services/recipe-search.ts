@@ -37,7 +37,10 @@ export type DietaryRestriction =
   | 'Síndrome do Intestino Irritável'
   | 'Doença Inflamatória Intestinal'
   | 'Dislipidemia'
-  | 'Gota';
+  | 'Gota'
+  | 'Vegano'
+  | 'Vegetariano'
+  | 'Ovolacto';
 
 /**
  * Asynchronously searches for recipes based on dietary restrictions.

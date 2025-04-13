@@ -117,6 +117,12 @@ const intelligentRecipeSearchFlow = ai.defineFlow<
   outputSchema: IntelligentRecipeSearchOutputSchema,
 },
 async input => {
-  const {output} = await prompt(input);
-  return output!;
+  if (input.recipeName) {
+    const {output} = await prompt(input);
+    return output!;
+  } else {
+    const {recipes} = await searchRecipesTool({restrictions: input.restrictions});
+    return {recipes};
+  }
 });
+

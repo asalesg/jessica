@@ -49,13 +49,14 @@ export type GenerateRecipeOutput = z.infer<typeof GenerateRecipeOutputSchema>;
 let previousRecipes: Recipe[] = [];
 
 export async function generateRecipe(input: GenerateRecipeInput): Promise<GenerateRecipeOutput> {
-    let recipes = await generateRecipeFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
+    const dishType = input.dishType === null || input.dishType === undefined ? undefined : input.dishType;
+    let recipes = await generateRecipeFlow({...input, dishType: dishType});
     let attempts = 0;
     const maxAttempts = 5;
 
     while (previousRecipes.some(prevRecipe =>
         recipes.recipes.some(newRecipe => newRecipe.title === prevRecipe.title)) && attempts < maxAttempts) {
-        recipes = await generateRecipeFlow({...input, dishType: input.dishType === null ? undefined : input.dishType});
+        recipes = await generateRecipeFlow({...input, dishType: dishType});
         attempts++;
     }
 

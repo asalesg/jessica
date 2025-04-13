@@ -253,14 +253,32 @@ export default function Home() {
 
       <div className="flex space-x-4 mb-4">
         <Button
-          onClick={handleGenerateRecipes}
+          onClick={() => {
+            if (selectedRestrictions.length === 0) {
+              toast({
+                title: 'Erro',
+                description: 'Selecione pelo menos uma restrição alimentar.',
+              });
+              return;
+            }
+            handleGenerateRecipes();
+          }}
           className="bg-green-500 text-white rounded-md p-2 hover:bg-green-700 transition duration-300"
           disabled={generating}
         >
           {generating ? 'Gerando...' : 'Gerar Receitas'}
         </Button>
         <Button
-          onClick={handleSearchRecipes}
+          onClick={() => {
+            if (selectedRestrictions.length === 0) {
+              toast({
+                title: 'Erro',
+                description: 'Selecione pelo menos uma restrição alimentar.',
+              });
+              return;
+            }
+            handleSearchRecipes();
+          }}
           className="bg-orange-500 text-white rounded-md p-2 hover:bg-orange-700 transition duration-300"
           disabled={searching}
         >

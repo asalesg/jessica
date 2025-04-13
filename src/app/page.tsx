@@ -190,7 +190,7 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle>{recipe.title}</CardTitle>
                   <CardDescription>
-                    Ingredientes: {recipe.ingredients.join(', ')}
+                    Ingredientes: {Array.isArray(recipe.ingredients) ? recipe.ingredients.join(', ') : 'Ingredientes não listados'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

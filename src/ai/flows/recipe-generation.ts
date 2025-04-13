@@ -29,7 +29,7 @@ const GenerateRecipeInputSchema = z.object({
       'Ovolacto',
     ] as const))
     .describe('The dietary restrictions to consider when generating the recipe.'),
-    ingredients: z.string().describe('A comma separated list of ingredients to include in the recipe.'),
+    ingredients: z.string().optional().describe('A comma separated list of ingredients to include in the recipe.'),
     dishType: z.enum(['doce', 'salgado']).optional().describe('The type of dish to generate (doce or salgado).')
 });
 export type GenerateRecipeInput = z.infer<typeof GenerateRecipeInputSchema>;
@@ -95,8 +95,14 @@ const prompt = ai.definePrompt({
   prompt: `Você é um especialista em culinária saudável e adaptada a restrições alimentares.
 
   O usuário tem as seguintes restrições alimentares: {{restrictions}}.
+  {{#if ingredients}}
   O usuário quer incluir os seguintes ingredientes: {{ingredients}}
+  {{/if}}
+  {{#if dishType}}
   O usuário prefere receitas do tipo: {{dishType}}
+  {{else}}
+  Como o usuário não especificou o tipo de prato, inclua pelo menos duas receitas doces e duas salgadas.
+  {{/if}}
 
   Sua tarefa é gerar receitas que atendam a essas restrições, use os ingredientes, e seja do tipo especificado. Se necessário, use a ferramenta searchRecipes para encontrar receitas existentes e adaptá-las.
   A saida deve ser um array de receitas que atendam as restricoes do usuario.

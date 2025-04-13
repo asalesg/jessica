@@ -126,7 +126,12 @@ const prompt = ai.definePrompt({
 
 Restrictions: {{{restrictions}}}
 Recipe Name: {{{recipeName}}}
+
+{{#if dishType}}
 Dish Type: {{{dishType}}}
+{{else}}
+Como o usuário não especificou o tipo de prato, retorne ao menos duas receitas doces e duas salgadas.
+{{/if}}
 
 {{#if restrictions}}
   Here are some recipes that adhere to these restrictions, use the searchRecipes tool to find recipes that meet the dietary restrictions.
